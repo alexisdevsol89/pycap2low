@@ -5,5 +5,3 @@ include README.md
 include requirements.txt
 
 recursive-exclude pycap2low/venv *
-
-exclude pycap2low/requirements.txt

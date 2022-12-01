@@ -7,17 +7,22 @@ from collections import deque
 from pathlib import Path
 # from logger import logger
 from pycap2low.logger import logger
+from pytrees import AVLTree
+# from configuration import ConfigExcept
+from pycap2low.configuration import ConfigExcept
 
 
-def main():
-    # arg_path = '/home/alex/Web/'
-    # arg_recursive = False
+def main() -> None:
+    # arg_path = '/home/alex/Hardware/'
+    # arg_recursive = True
     # arg_str_camel_case = '-'
+    # arg_excepts = '/home/alex/Desarrollo/Proyectos/py_scripts/pycap2low/pycap2low/except.txt'
 
     args = _parse_args()
     arg_path = str(Path(args.path).resolve())
     arg_str_camel_case = args.str_camel_case
     arg_recursive = args.recursive
+    arg_excepts = args.excepts
 
     if not os.path.exists(arg_path):
         msg = 'Invalid directory path'
@@ -29,11 +34,24 @@ def main():
         logger.error(msg)
         raise ValueError(msg)
 
-    if not arg_recursive:
-        __ren_listdir__(arg_path, str_camel_case=arg_str_camel_case)
+    if arg_excepts and not os.path.exists(arg_excepts):
+        msg = 'Invalid directory path except'
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    if arg_recursive:
+        if arg_excepts:
+            excepts = ConfigExcept.load(arg_excepts)
+            __ren_listdir_rec_excepts__(arg_path, str_camel_case=arg_str_camel_case, excepts=excepts)
+        else:
+            __ren_listdir_rec__(arg_path, str_camel_case=arg_str_camel_case)        
     else:
-        __ren_listdir_rec__(arg_path, str_camel_case=arg_str_camel_case)
-
+        if arg_excepts:
+            excepts = ConfigExcept.load(arg_excepts)
+            __ren_listdir_excepts__(arg_path, str_camel_case=arg_str_camel_case, excepts=excepts)
+        else:
+            __ren_listdir__(arg_path, str_camel_case=arg_str_camel_case)
+        
 def _parse_args():
     parser = argparse.ArgumentParser(prog='pycap2low',
                                      description='Convert all file and directory names to lower case')
@@ -55,14 +73,17 @@ def _parse_args():
                         help='Apply changes recursively to subdirectories')
     parser.add_argument('--str-camel-case',
                         required=False,
-                        help='camel case separator chain')
+                        help='Camel case separator chain')
+    parser.add_argument('--excepts',
+                        required=False,
+                        help='File path with exceptions')
                         
     return parser.parse_args()
 
-def _lower(txt: str):
+def _lower(txt: str) -> str:
     return txt.lower()
 
-def _rep_camel_case(txt: str, strr='-'):
+def _rep_camel_case(txt: str, strr='-') -> str:
     txtr = ''
 
     for i in range(len(txt) - 1):
@@ -77,7 +98,7 @@ def _rep_camel_case(txt: str, strr='-'):
 
     return txtr
 
-def __ren_listdir_rec__(path, str_camel_case=None):
+def __ren_listdir_rec__(path: str, str_camel_case=None) -> None:
     func_ren = _lower if not str_camel_case else _rep_camel_case
     q = deque([path])
     while len(q):
@@ -89,13 +110,46 @@ def __ren_listdir_rec__(path, str_camel_case=None):
                 q.append(new_path)
     __rename__(path , func_ren)
 
-def __ren_listdir__(path, str_camel_case=None):
+def __ren_listdir_rec_excepts__(path: str, excepts: AVLTree, str_camel_case=None) -> None:
     func_ren = _lower if not str_camel_case else _rep_camel_case
+    
+    q = deque([path])
+    while len(q):
+        _path = q.popleft()
+        for item in os.listdir(_path):
+            p = os.path.join(_path, item)
+            node = excepts.search(ConfigExcept(p))
+            if node:
+                if not node.val.recursive and os.path.isdir(node.val.path):
+                    q.append(new_path)
+            else:
+                new_path = __rename__(p, func_ren)            
+                if os.path.isdir(new_path):
+                    q.append(new_path)
+
+    if not excepts.search(ConfigExcept(path)):
+        __rename__(path , func_ren)
+
+def __ren_listdir__(path: str, str_camel_case=None) -> None:
+    func_ren = _lower if not str_camel_case else _rep_camel_case
+    
     for item in os.listdir(path):
-        __rename__(os.path.join(path, item), func_ren)
+        _path = os.path.join(path, item)
+        __rename__(_path, func_ren)
     __rename__(path, func_ren)
 
-def __rename__(path: str, func_ren):
+def __ren_listdir_excepts__(path: str, excepts: AVLTree, str_camel_case=None) -> None:
+    func_ren = _lower if not str_camel_case else _rep_camel_case
+    
+    for item in os.listdir(path):
+        _path = os.path.join(path, item)
+        if not excepts.search(ConfigExcept(_path)):
+            __rename__(_path, func_ren)
+    
+    if not excepts.search(ConfigExcept(path)):
+        __rename__(path, func_ren)
+
+def __rename__(path: str, func_ren) -> str:
     i = path.rfind('/')
     name = path[i + 1:]
     new_path = os.path.join(path[:i], func_ren(name))

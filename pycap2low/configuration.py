@@ -1,16 +1,14 @@
 import os
 
 from pathlib import Path
-from pytrees import AVLTree
 
 
 class ConfigExcept:
     @staticmethod
-    def load(path) -> AVLTree:
+    def load(path) -> iter:
         if not os.path.exists(path):
             raise ValueError('Invalid directory path')
 
-        cfg_excps = AVLTree()
         with open(path) as f:
             for ln in f:
                 i = ln.find(' ')
@@ -20,9 +18,7 @@ class ConfigExcept:
                     cfg_excp = ConfigExcept(str(Path(_path).resolve()), recursive=True)
                 else:
                     cfg_excp = ConfigExcept(str(Path(_path).resolve()), recursive=False)
-                cfg_excps.insert(cfg_excp)
-                
-        return cfg_excps
+                yield cfg_excp
 
     __slots__ = '__path', '__recursive'
     def __init__(self, path, recursive=True) -> None:

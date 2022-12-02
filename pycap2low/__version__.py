@@ -1,7 +1,7 @@
 __title__ = 'pycap2low'
 __description__ = 'Convert all file and directory names to lower case'
 __url__ = 'https://github.com/alexisdevsol89/pycap2low'
-__version__ = '2.1.0'
+__version__ = '2.2.0'
 __author__ = 'Alexis Torres Valdes'
 __author_email__ = 'alexisdevsol@gmail.com'
 __credits__ = ['Alexis Torres Valdes']

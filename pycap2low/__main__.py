@@ -13,7 +13,7 @@ from pycap2low.configuration import ConfigExcept
 
 
 def main() -> None:
-    # arg_path = '/home/alex/Hardware/'
+    # arg_path = '/home/alex/Pro/'
     # arg_recursive = True
     # arg_str_camel_case = '-'
     # arg_excepts = '/home/alex/Desarrollo/Proyectos/py_scripts/pycap2low/pycap2low/except.txt'
@@ -41,13 +41,15 @@ def main() -> None:
     
     if arg_recursive:
         if arg_excepts:
-            excepts = ConfigExcept.load(arg_excepts)
+            cfg_excepts = ConfigExcept.load(arg_excepts)
+            excepts = __avl_list__(cfg_excepts)
             __ren_listdir_rec_excepts__(arg_path, str_camel_case=arg_str_camel_case, excepts=excepts)
         else:
             __ren_listdir_rec__(arg_path, str_camel_case=arg_str_camel_case)        
     else:
         if arg_excepts:
-            excepts = ConfigExcept.load(arg_excepts)
+            cfg_excepts = ConfigExcept.load(arg_excepts)
+            excepts = __avl_list__(cfg_excepts)
             __ren_listdir_excepts__(arg_path, str_camel_case=arg_str_camel_case, excepts=excepts)
         else:
             __ren_listdir__(arg_path, str_camel_case=arg_str_camel_case)
@@ -79,6 +81,14 @@ def _parse_args():
                         help='File path with exceptions')
                         
     return parser.parse_args()
+
+def __avl_list__(it: iter) -> AVLTree:
+    avl = AVLTree()
+
+    for e in it:
+        avl.insert(e)
+
+    return avl
 
 def _lower(txt: str) -> str:
     return txt.lower()

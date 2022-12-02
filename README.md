@@ -26,6 +26,6 @@ La aplicación recibe como primer parámetro la ruta del directorio a renombrar.
 > pycap2low -h | --help
 
 # Créditos
-Idea original y desarrollo: 
-Alexis Torres Valdes (alexisdevsol@gmail.com).
+<p>Idea original y desarrollo:<br>
+Alexis Torres Valdes (<a href="mailto: alexisdevsol@gmail.com">alexisdevsol@gmail.com</a>)</p>
 

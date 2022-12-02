@@ -19,8 +19,8 @@ La aplicación recibe como primer parámetro la ruta del directorio a renombrar.
 > --excepts Ruta a fichero contenedor de rutas de excepción.
 >- Las rutas dentro del fichero admiten atributos. Por el momento el atributo reconocido es '-r'. En caso no tener atributos usar caracter '-'.
 >- El formato sería el siguiente:
-    * -r /ruta/directorio/exceptuar/recursivamente.
-    * - /ruta/directorio/exceptuar
+    -r /ruta/directorio/exceptuar/recursivamente.
+    - /ruta/directorio/exceptuar
 
 # Ayuda
 > pycap2low -h | --help
